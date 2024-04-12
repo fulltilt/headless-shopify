@@ -1,5 +1,6 @@
 import { postToShopify } from "../../util/shopify";
 import { Product } from "../types/admin.types";
+import cartFragment from "./shopify/fragments/cart";
 
 export async function getProducts(sortKey: string, limit: number) {
   const data = await postToShopify({
@@ -109,7 +110,7 @@ export async function getProduct(id: string) {
       id: `gid://shopify/Product/${id}`,
     },
   });
-  console.log(id, data);
+
   return {
     id: data.product.id,
     title: data.product.title,
@@ -122,4 +123,72 @@ export async function getProduct(id: string) {
     },
     slug: data.product.handle,
   };
+}
+
+export async function getCustomer(email: string) {
+  const data = await postToShopify({
+    query: `
+        #graphql
+        query GetCustomer($email: String!) {
+            customers(first: 10, query: $email) {
+                edges{
+                    node {
+                        firstName
+                        lastName
+                        email
+                        defaultAddress {
+                            id
+                            address1
+                        }
+                    }
+                }
+            }
+        }
+      `,
+    variables: {
+      email: email,
+    },
+    customer: true,
+  });
+  console.log("data", data);
+}
+
+export async function createCart() {
+  const data = await postToShopify({
+    query: `
+        #graphql
+        mutation createCart($lineItems: [CartLineInput!]) {
+            cartCreate(input: { lines: $lineItems }) {
+                cart {
+                    ...cart
+                }
+            }
+        }
+        ${cartFragment}
+    `,
+    variables: {
+      lineItems: [],
+    },
+  });
+
+  return data.cartCreate.cart;
+}
+
+export async function getCart(cartId: string) {
+  const data = await postToShopify({
+    query: `
+        #graphql
+        query getCart($cartId: ID!) {
+            cart(id: $cartId) {
+            ...cart
+            }
+        }
+        ${cartFragment}
+      `,
+    variables: {
+      cartId: cartId,
+    },
+  });
+
+  return data;
 }

@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { getProducts } from "../api/route";
+import { getCustomer, getProducts } from "../api/route";
 import { ProductCardProps } from "../types";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -38,6 +38,8 @@ function ProductGridSection({ title }: { title: String }) {
 }
 
 async function ProductSuspense({ title }: { title: String }) {
+  const test = await getCustomer("dave.doria@gmail.com");
+
   return (
     await getProducts(
       title === "Most Popular" ? "BEST_SELLING" : "CREATED_AT",
