@@ -1,4 +1,4 @@
-import { getProduct } from "@/app/api/route";
+import { getCart, getProduct } from "@/app/api/route";
 import { ProductCardProps } from "@/app/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,12 +20,11 @@ export default async function SuccessPage({
   const paymentIntent = await stripe.paymentIntents.retrieve(
     searchParams.payment_intent
   );
-  if (paymentIntent.metadata.productId == null) return notFound();
 
-  let arr = paymentIntent.metadata.productId.split("/");
-  let id = arr[arr.length - 1];
-  const product: ProductCardProps = await getProduct(id);
-  if (product == null) return notFound();
+  if (paymentIntent.metadata.cartId === null) return notFound();
+
+  const cart = await getCart(paymentIntent.metadata.cartId);
+  if (cart == null) return notFound();
 
   const isSuccess = paymentIntent.status === "succeeded";
 
@@ -35,23 +34,31 @@ export default async function SuccessPage({
         {isSuccess ? "Success!" : "Error!"}
       </h1>
       <div className="flex gap-4 items-center">
-        <div className="aspect-video flex-shrink-0 w-1/3 relative">
-          <Image
-            src={product.imageSrc}
-            fill
-            alt={product.title}
-            className="object-contain"
-          />
-        </div>
-        <div>
-          <div className="text-lg">
-            {formattedPrice.format(parseFloat(product.price.amount))}
+        {cart.lines.edges.map((product) => (
+          <div key={product.node.id}>
+            <div className="aspect-video flex-shrink-0 w-1/3 relative">
+              <Image
+                src={product.node.merchandise.product.featuredImage.url}
+                fill
+                alt={product.node.merchandise.title}
+                className="object-contain"
+              />
+            </div>
+            <div>
+              <div className="text-lg">
+                {formattedPrice.format(
+                  parseFloat(product.node.cost.totalAmount.amount)
+                )}
+              </div>
+              <h1 className="text-2xl font-bold">
+                {product.node.merchandise.title}
+              </h1>
+              <div className="line-clamp-3 text-muted-foreground">
+                {product.node.merchandise.product.description}
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold">{product.title}</h1>
-          <div className="line-clamp-3 text-muted-foreground">
-            {product.description}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

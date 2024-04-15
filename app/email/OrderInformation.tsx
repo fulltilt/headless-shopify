@@ -1,20 +1,14 @@
-import {
-  Button,
-  Column,
-  Img,
-  Row,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Column, Img, Row, Section, Text } from "@react-email/components";
+import { ShopifyCart } from "../api/shopify/types";
 
 type OrderInformationProps = {
   order: { id: string; createdAt: Date; pricePaidInCents: number };
-  product: { imagePath: string; name: string; description: string };
+  cart: ShopifyCart;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
-export function OrderInformation({ order, product }: OrderInformationProps) {
+export function OrderInformation({ order, cart }: OrderInformationProps) {
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -43,37 +37,40 @@ export function OrderInformation({ order, product }: OrderInformationProps) {
               Price Paid
             </Text>
             <Text className="mt-0 mr-4">
-              {/* {formattedPrice.format(parseFloat(order..price.amount))}
-              {formatCurrency(order.pricePaidInCents / 100)} */}
+              {formattedPrice.format(parseFloat(cart.cost.totalAmount.amount))}
             </Text>
           </Column>
         </Row>
       </Section>
-      <Section className="border border-solid border-gray-500 rounded-lg p-4 md:p-6 my-4">
-        <Img
-          width="100%"
-          alt={product.name}
-          src={`${process.env.NEXT_PUBLIC_SERVER_URL}${product.imagePath}`}
-        />
-        <Row className="mt-8">
-          <Column className="align-bottom">
-            <Text className="text-lg font-bold m-0 mr-4">{product.name}</Text>
-          </Column>
-          <Column align="right">
-            {/* <Button
-              href={`${process.env.NEXT_PUBLIC_SERVER_URL}/products/download/${downloadVerificationId}`}
-              className="bg-black text-white px-6 py-4 rounded text-lg"
-            >
-              Download
-            </Button> */}
-          </Column>
-        </Row>
-        <Row>
-          <Column>
-            <Text className="text-gray-500 mb-0">{product.description}</Text>
-          </Column>
-        </Row>
-      </Section>
+      {cart.lines.edges.map((product) => (
+        <Section key={product.node.id} className="p-4 md:p-6 my-4">
+          <div className="flex items-center justify-center">
+            <Img
+              width="50%"
+              alt={product.node.merchandise.product.title}
+              src={product.node.merchandise.product.featuredImage.url}
+            />
+          </div>
+          <Row className="mt-8">
+            <Column className="align-bottom">
+              <Text className="text-lg font-bold m-0 mr-4">
+                {product.node.merchandise.product.title}
+              </Text>
+            </Column>
+            <Column align="right">
+              <Text className="text-lg font-bold m-0 mr-4">
+                {product.node.quantity} @
+                {formattedPrice.format(
+                  parseFloat(
+                    product.node.merchandise.product.priceRange.maxVariantPrice
+                      .amount
+                  )
+                )}
+              </Text>
+            </Column>
+          </Row>
+        </Section>
+      ))}
     </>
   );
 }

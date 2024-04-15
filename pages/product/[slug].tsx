@@ -65,15 +65,14 @@ export default function ProductPage({
 }: {
   product: ProductCardProps;
 }) {
-  console.log("product", product);
   return (
     <div>
       <Head>
         <title>Dee Jays Collectibles</title>
-        <meta
+        {/* <meta
           name="description"
           content="Jason has so many ducks. Please help."
-        />
+        /> */}
       </Head>
 
       <main>

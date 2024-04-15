@@ -1,6 +1,7 @@
 import { postToShopify } from "../../util/shopify";
 import { Product } from "../types/admin.types";
 import cartFragment from "./shopify/fragments/cart";
+import { ShopifyCart } from "./shopify/types";
 
 export async function getProducts(sortKey: string, limit: number) {
   const data = await postToShopify({
@@ -86,6 +87,18 @@ export async function getProduct(id: string) {
                 title
                 totalInventory
                 availableForSale
+                variants(first: 5) {
+                    edges {
+                      node {
+                        id
+                        title
+                        price {
+                          amount
+                          currencyCode
+                        }
+                      }
+                    }
+                }
                 priceRange {
                     maxVariantPrice {
                         amount
@@ -112,7 +125,7 @@ export async function getProduct(id: string) {
   });
 
   return {
-    id: data.product.id,
+    id: data.product.variants.edges?.[0]?.node.id,
     title: data.product.title,
     description: data.product.description,
     imageSrc: data.product.images.edges?.[0]?.node.url,
@@ -123,34 +136,6 @@ export async function getProduct(id: string) {
     },
     slug: data.product.handle,
   };
-}
-
-export async function getCustomer(email: string) {
-  const data = await postToShopify({
-    query: `
-        #graphql
-        query GetCustomer($email: String!) {
-            customers(first: 10, query: $email) {
-                edges{
-                    node {
-                        firstName
-                        lastName
-                        email
-                        defaultAddress {
-                            id
-                            address1
-                        }
-                    }
-                }
-            }
-        }
-      `,
-    variables: {
-      email: email,
-    },
-    customer: true,
-  });
-  console.log("data", data);
 }
 
 export async function createCart() {
@@ -174,7 +159,7 @@ export async function createCart() {
   return data.cartCreate.cart;
 }
 
-export async function getCart(cartId: string) {
+export async function getCart(cartId: string): Promise<ShopifyCart> {
   const data = await postToShopify({
     query: `
         #graphql
@@ -190,5 +175,74 @@ export async function getCart(cartId: string) {
     },
   });
 
-  return data;
+  return data.cart;
+}
+
+export async function addToCart(
+  cartId: string,
+  lines: { merchandiseId: string; quantity: number }[]
+) {
+  const data = await postToShopify({
+    query: `
+        mutation addToCart($cartId: ID!, $lines: [CartLineInput!]!) {
+            cartLinesAdd(cartId: $cartId, lines: $lines) {
+                cart {
+                    ...cart
+                }
+            }
+        }
+        ${cartFragment}
+    `,
+    variables: {
+      cartId: cartId,
+      lines: lines,
+    },
+  });
+
+  return data.cartLinesAdd.cart;
+}
+
+export async function removeFromCart(cartId: string, lineIds: string[]) {
+  const data = await postToShopify({
+    query: `
+            mutation removeFromCart($cartId: ID!, $lineIds: [ID!]!) {
+                cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+                    cart {
+                        ...cart
+                    }
+                }
+            }
+          ${cartFragment}
+      `,
+    variables: {
+      cartId: cartId,
+      lineIds: lineIds,
+    },
+  });
+
+  return data.cartLinesRemove.cart;
+}
+
+export async function updateCart(
+  cartId: string,
+  lines: { id: string; merchandiseId: string; quantity: number }[]
+) {
+  const data = await postToShopify({
+    query: `
+            mutation editCartItems($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+                cartLinesUpdate(cartId: $cartId, lines: $lines) {
+                    cart {
+                        ...cart
+                    }
+                }
+            }
+            ${cartFragment}
+        `,
+    variables: {
+      cartId: cartId,
+      lines: lines,
+    },
+  });
+
+  return data.cartLinesUpdate.cart;
 }

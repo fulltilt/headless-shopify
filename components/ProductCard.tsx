@@ -24,11 +24,18 @@ export default function ProductCard({
     style: "currency",
     currency: "USD",
   });
+  let arr = id.split("/");
+  id = arr[arr.length - 1];
 
   return (
     <Card className="flex overflow-hidden flex-col">
       <div className="relative w-full h-auto aspect-video">
-        <Image src={imageSrc} alt={imageAlt} fill />
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          className="h-full w-full object-contain"
+        />
       </div>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
@@ -41,7 +48,7 @@ export default function ProductCard({
       </CardContent>
       <CardFooter>
         <Button asChild size="lg" className="w-full">
-          <Link href={`/products/${id}/purchase`}>Purchase</Link>
+          <Link href={`/products/${id}`}>Purchase</Link>
         </Button>
       </CardFooter>
     </Card>
