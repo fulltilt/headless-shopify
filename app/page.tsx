@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
-import getProducts from "../api/getProducts";
-import { ProductCardProps } from "../types";
+import getProducts from "./api/getProducts";
+import { ProductCardProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import ProductCard, { ProductCardSkeleton } from "@/components/ProductCard";
