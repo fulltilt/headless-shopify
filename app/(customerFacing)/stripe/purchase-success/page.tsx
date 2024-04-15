@@ -1,7 +1,5 @@
-import { getCart, getProduct } from "@/app/api/route";
-import { ProductCardProps } from "@/app/types";
+import getCart from "@/app/api/getCart";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import Stripe from "stripe";
 

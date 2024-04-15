@@ -2,13 +2,11 @@
 
 import { ProductCardProps } from "@/app/types";
 import { Cart, CartItem, Connection, Money } from "@/app/api/shopify/types";
-import {
-  addToCart,
-  createCart,
-  getCart,
-  removeFromCart,
-  updateCart,
-} from "@/app/api/route";
+import addToCart from "@/app/api/addToCart";
+import createCart from "@/app/api/createCart";
+import getCart from "@/app/api/getCart";
+import removeFromCart from "@/app/api/removeFromCart";
+import updateCart from "@/app/api/updateCart";
 // import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 

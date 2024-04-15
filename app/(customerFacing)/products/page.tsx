@@ -1,4 +1,4 @@
-import { getProducts } from "@/app/api/route";
+import getProducts from "@/app/api/getProducts";
 import { ProductCardProps } from "@/app/types";
 import ProductCard, { ProductCardSkeleton } from "@/components/ProductCard";
 import { Suspense } from "react";

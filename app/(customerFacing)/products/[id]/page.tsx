@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProductPage } from "./ProductPage";
-import { getProduct } from "@/app/api/route";
+import getProduct from "@/app/api/getProduct";
 import { ProductCardProps } from "@/app/types";
 
 export default async function PurchasePage({
